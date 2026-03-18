@@ -3,44 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Morozov Ultra Max | All-in-One</title>
-    <!-- SDK -->
-    <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.18.0.js"></script>
+    <title>Morozovvideo | Реальный Звонок</title>
+    <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.20.0.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-storage-compat.js"></script>
 
     <style>
-        :root { --bg: #0e1621; --side: #17212b; --active: #2b5278; --accent: #2481cc; --text: #fff; }
+        /* Стилизация под твой проект Morozovvideo (цвета и формы) */
+        :root { 
+            --primary: #00AEFC;    /* PRIMARY_COLOR из config.json */
+            --bg: #111111;         /* BACKGROUND_COLOR */
+            --card: #222222;       /* VIDEO_AUDIO_TILE_COLOR */
+            --text: #FFFFFF;
+            --danger: #FF414D;     /* SEMANTIC_ERROR */
+            --success: #36B37E;    /* SEMANTIC_SUCCESS */
+        }
+
         body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); display: flex; height: 100vh; overflow: hidden; }
         
-        /* Auth */
-        #auth-screen { position: fixed; inset: 0; background: var(--bg); z-index: 1000; display: flex; align-items: center; justify-content: center; }
-        .auth-box { background: var(--side); padding: 40px; border-radius: 20px; width: 300px; text-align: center; }
-        input { width: 90%; padding: 12px; margin: 8px 0; border-radius: 8px; border: none; background: #242f3d; color: #fff; outline: none; }
-        button { background: var(--accent); color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; transition: 0.2s; }
-        button:hover { opacity: 0.8; }
+        /* Кнопки и Инпуты (borderRadius: 100 из theme.json) */
+        button { background: var(--primary); color: white; border: none; padding: 12px 25px; border-radius: 100px; cursor: pointer; font-weight: 600; transition: 0.2s; }
+        button:hover { opacity: 0.8; transform: translateY(-1px); }
+        input { padding: 12px 20px; border-radius: 100px; border: 1px solid #333; background: #1a1a1a; color: white; outline: none; width: 80%; }
+        input:focus { border-color: var(--primary); }
 
+        /* Auth Screen */
+        #auth-screen { position: fixed; inset: 0; background: var(--bg); z-index: 2000; display: flex; align-items: center; justify-content: center; }
+        .auth-box { background: var(--card); padding: 50px; border-radius: 30px; text-align: center; width: 320px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        
         /* Sidebar */
-        #sidebar { width: 320px; background: var(--side); border-right: 1px solid #000; display: flex; flex-direction: column; }
-        .user-item { padding: 15px; cursor: pointer; border-bottom: 1px solid #0e1621; display: flex; justify-content: space-between; align-items: center; }
-        .user-item:hover { background: var(--active); }
-        .online-dot { width: 10px; height: 10px; background: #4caf50; border-radius: 50%; }
+        #sidebar { width: 320px; background: #1a1a1a; border-right: 1px solid #333; display: flex; flex-direction: column; }
+        .user-item { padding: 20px; cursor: pointer; border-bottom: 1px solid #222; display: flex; justify-content: space-between; align-items: center; }
+        .user-item:hover { background: #262626; }
+        .online-dot { width: 10px; height: 10px; background: var(--success); border-radius: 50%; box-shadow: 0 0 5px var(--success); }
 
-        /* Chat */
+        /* Chat Area */
         #chat-area { flex: 1; display: flex; flex-direction: column; position: relative; }
-        #messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px; background: #0e1621 url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); }
-        .msg { max-width: 70%; padding: 10px 15px; border-radius: 12px; position: relative; font-size: 15px; }
-        .sent { align-self: flex-end; background: var(--active); border-bottom-right-radius: 2px; }
-        .received { align-self: flex-start; background: #182533; border-bottom-left-radius: 2px; }
-        .msg img { max-width: 100%; border-radius: 8px; margin-top: 5px; }
+        #messages { flex: 1; overflow-y: auto; padding: 25px; display: flex; flex-direction: column; gap: 15px; background: var(--bg); }
+        .msg { max-width: 70%; padding: 12px 18px; border-radius: 20px; font-size: 15px; line-height: 1.4; }
+        .sent { align-self: flex-end; background: var(--primary); border-bottom-right-radius: 4px; }
+        .received { align-self: flex-start; background: var(--card); border-bottom-left-radius: 4px; }
 
-        /* Video Call Windows */
-        #video-container { position: absolute; top: 10px; right: 10px; display: flex; gap: 10px; z-index: 100; }
-        .video-box { width: 150px; height: 110px; background: #000; border-radius: 10px; overflow: hidden; border: 2px solid var(--accent); }
+        /* --- ВИДЕОЗВОНОК (РАБОЧИЕ ОКНА) --- */
+        #video-grid { position: absolute; top: 80px; right: 20px; display: flex; flex-direction: column; gap: 15px; z-index: 100; }
+        .video-box { width: 240px; height: 180px; background: black; border-radius: 20px; overflow: hidden; border: 2px solid var(--primary); box-shadow: 0 10px 30px rgba(0,0,0,0.5); position: relative; }
+        /* Заглушка, пока видео нет */
+        .video-box::after { content: "Подключение..."; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #555; font-size: 12px; }
 
-        .header { padding: 15px; background: var(--side); display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
+        .header { padding: 15px 25px; background: #1a1a1a; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; }
+        #incoming-call { position: fixed; top: 30px; left: 50%; transform: translateX(-50%); background: var(--primary); padding: 25px; border-radius: 30px; z-index: 3000; display: none; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         .hidden { display: none !important; }
     </style>
 </head>
@@ -48,45 +61,55 @@
 
     <div id="auth-screen">
         <div class="auth-box">
-            <h2>Morozov Ultra Max</h2>
+            <img src="https://dl-prod.rteappbuilder.com/tluafed/5TWpUqsdC0BH6lPJ.jpeg" width="80" style="border-radius: 20px; margin-bottom: 15px;">
+            <h2 style="margin:0; color:var(--primary)">Morozovvideo</h2>
+            <p style="font-size: 12px; color: #888; margin-bottom: 25px;">Real-Time Engagement</p>
             <input type="email" id="email" placeholder="Email">
             <input type="password" id="pass" placeholder="Пароль">
-            <button onclick="authAction('login')">Войти</button>
-            <p style="cursor:pointer; font-size: 12px; margin-top: 10px;" onclick="authAction('reg')">Нет аккаунта? Создать</p>
+            <button onclick="authAction('login')" style="width:100%; margin-top:15px;">ВОЙТИ</button>
+            <p style="cursor:pointer; font-size: 11px; margin-top: 15px; color: #666;" onclick="authAction('reg')">Зарегистрироваться</p>
         </div>
+    </div>
+
+    <div id="incoming-call">
+        <h3 id="caller-name" style="margin-top:0">Вам звонят...</h3>
+        <button onclick="acceptCall()" style="background:var(--success)">ОТВЕТИТЬ</button>
+        <button onclick="rejectCall()" style="background:var(--danger); margin-left:10px;">СБРОСИТЬ</button>
     </div>
 
     <div id="sidebar">
         <div class="header">
-            <b id="my-name">Профиль</b>
-            <button onclick="auth.signOut()" style="width: auto; padding: 5px 10px; background: #e53935;">Выйти</button>
+            <b id="my-profile-name">Профиль</b>
+            <button onclick="auth.signOut()" style="background:var(--danger); padding: 5px 10px; min-width: auto; font-size: 12px;">Выход</button>
         </div>
-        <div style="padding: 10px;"><input type="text" id="find-user" placeholder="Найти по Email..." onkeypress="if(event.key==='Enter') searchUser()"></div>
+        <div style="padding: 15px;"><input type="text" id="find-user" placeholder="Найти по Email..." style="width: 100%; box-sizing: border-box;" onkeypress="if(event.key==='Enter') searchUser()"></div>
         <div id="user-list"></div>
     </div>
 
     <div id="chat-area">
         <div class="header">
-            <span id="chat-title">Выберите чат</span>
-            <button id="call-btn" class="hidden" onclick="startCall()" style="width:auto">📞 Позвонить</button>
+            <span id="chat-title" style="font-weight:bold">Выберите чат</span>
+            <div id="chat-actions" class="hidden">
+                <button onclick="initiateCall()">📞 ПОЗВОНИТЬ</button>
+                <button id="hangup-btn" class="hidden" style="background:var(--danger)" onclick="endCall()">🔴 ЗАВЕРШИТЬ</button>
+            </div>
         </div>
 
-        <div id="video-container">
+        <div id="video-grid">
             <div id="local-video" class="video-box hidden"></div>
             <div id="remote-video" class="video-box hidden"></div>
         </div>
 
         <div id="messages"></div>
 
-        <div class="header">
-            <input type="file" id="file-input" class="hidden" onchange="uploadFile(this)">
-            <button onclick="document.getElementById('file-input').click()" style="width:auto">📎</button>
-            <input type="text" id="m-text" placeholder="Сообщение..." onkeypress="if(event.key==='Enter') sendMsg()">
-            <button onclick="sendMsg()" style="width:auto">➡️</button>
+        <div class="header" style="border-top: 1px solid #333; gap: 10px;">
+            <input type="text" id="m-text" placeholder="Сообщение..." style="flex:1" onkeypress="if(event.key==='Enter') sendMsg()">
+            <button onclick="sendMsg()" style="min-width: auto;">ОТПРАВИТЬ</button>
         </div>
     </div>
 
     <script>
+        // --- КОНФИГУРАЦИЯ (ТВОИ ДАННЫЕ) ---
         const firebaseConfig = {
             apiKey: "AIzaSyDutfZZER5BasyHr68zwLCx7B5k1adFhik",
             authDomain: "morozov-ultra.firebaseapp.com",
@@ -95,21 +118,26 @@
             messagingSenderId: "255345933856",
             appId: "1:255345933856:web:5b8d1b93696f36eb5d4645"
         };
+        const AGORA_APP_ID = "6bde9afb487c403fb1115ae7c7210e4b"; // Твой ID из config.json
+
+        // Инициализация
         firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore(), auth = firebase.auth(), storage = firebase.storage();
-
-        const AGORA_APP_ID = "ТВОЙ_AGORA_APP_ID"; // <--- ВСТАВЬ СЮДА
+        const db = firebase.firestore(), auth = firebase.auth();
+        
+        // Настройка Agora Клиента
+        let agoraClient = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
         let currentUID, activeChatID, targetUID;
+        let localTracks = { videoTrack: null, audioTrack: null };
 
-        // --- AUTH ---
-        async function authAction(t) {
+        // --- 1. АВТОРИЗАЦИЯ И ПРОФИЛЬ ---
+        async function authAction(type) {
             const e = document.getElementById('email').value, p = document.getElementById('pass').value;
             try {
-                if(t === 'reg') {
+                if(type === 'reg') {
                     const r = await auth.createUserWithEmailAndPassword(e, p);
                     await db.collection('users').doc(r.user.uid).set({ email: e, name: e.split('@')[0], online: true });
                 } else await auth.signInWithEmailAndPassword(e, p);
-            } catch(err) { alert(err.message); }
+            } catch(err) { alert("Ошибка: " + err.message); }
         }
 
         auth.onAuthStateChanged(user => {
@@ -118,64 +146,50 @@
                 document.getElementById('auth-screen').classList.add('hidden');
                 db.collection('users').doc(currentUID).update({ online: true });
                 loadContacts();
-            } else document.getElementById('auth-screen').classList.remove('hidden');
+                listenForIncomingCalls();
+            } else {
+                document.getElementById('auth-screen').classList.remove('hidden');
+                if(currentUID) db.collection('users').doc(currentUID).update({ online: false });
+            }
         });
 
-        // --- MESSAGES & FILES ---
-        async function sendMsg(url = null) {
-            const text = document.getElementById('m-text').value;
-            if((!text && !url) || !activeChatID) return;
-            await db.collection('chats').doc(activeChatID).collection('messages').add({
-                text: text, file: url, sender: currentUID, time: firebase.firestore.FieldValue.serverTimestamp()
-            });
-            document.getElementById('m-text').value = "";
-        }
-
-        async function uploadFile(el) {
-            const file = el.files[0];
-            const ref = storage.ref(`uploads/${Date.now()}_${file.name}`);
-            await ref.put(file);
-            const url = await ref.getDownloadURL();
-            sendMsg(url);
-        }
-
+        // --- 2. ЧАТ И КОНТАКТЫ ---
         function openChat(user) {
             targetUID = user.id;
             activeChatID = [currentUID, targetUID].sort().join('_');
             document.getElementById('chat-title').innerText = user.name;
-            document.getElementById('call-btn').classList.remove('hidden');
+            document.getElementById('chat-actions').classList.remove('hidden');
             listenMsgs();
+        }
+
+        async function sendMsg() {
+            const text = document.getElementById('m-text').value;
+            if(!text || !activeChatID) return;
+            await db.collection('chats').doc(activeChatID).collection('messages').add({
+                text: text, sender: currentUID, time: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            document.getElementById('m-text').value = "";
         }
 
         function listenMsgs() {
             db.collection('chats').doc(activeChatID).collection('messages').orderBy('time', 'asc').onSnapshot(snap => {
-                const box = document.getElementById('messages');
-                box.innerHTML = "";
+                const box = document.getElementById('messages'); box.innerHTML = "";
                 snap.forEach(doc => {
                     const m = doc.data();
                     const div = document.createElement('div');
                     div.className = `msg ${m.sender === currentUID ? 'sent' : 'received'}`;
-                    div.innerHTML = m.file ? `<img src="${m.file}">` : "";
-                    div.innerHTML += `<div>${m.text}</div>`;
+                    div.innerText = m.text;
                     box.appendChild(div);
                 });
                 box.scrollTop = box.scrollHeight;
             });
         }
 
-        // --- SEARCH & CONTACTS ---
-        async function searchUser() {
-            const email = document.getElementById('find-user').value;
-            const snap = await db.collection('users').where("email", "==", email).get();
-            if(!snap.empty) openChat({id: snap.docs[0].id, ...snap.docs[0].data()});
-        }
-
         function loadContacts() {
             db.collection('users').onSnapshot(snap => {
-                const list = document.getElementById('user-list');
-                list.innerHTML = "";
+                const list = document.getElementById('user-list'); list.innerHTML = "";
                 snap.forEach(doc => {
-                    if(doc.id === currentUID) { document.getElementById('my-name').innerText = doc.data().name; return; }
+                    if(doc.id === currentUID) { document.getElementById('my-profile-name').innerText = doc.data().name; return; }
                     const u = doc.data();
                     const div = document.createElement('div');
                     div.className = "user-item";
@@ -186,24 +200,109 @@
             });
         }
 
-        // --- AGORA CALLS ---
-        let agoraClient = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
-        async function startCall() {
-            document.getElementById('local-video').classList.remove('hidden');
-            const [audio, video] = await Promise.all([
-                AgoraRTC.createMicrophoneAudioTrack(), AgoraRTC.createCameraVideoTrack()
-            ]);
-            await agoraClient.join(AGORA_APP_ID, activeChatID, null, null);
-            video.play("local-video");
-            await agoraClient.publish([audio, video]);
+        // --- 3. СИГНАЛИНГ ЗВОНКА (FIREBASE) ---
+        function listenForIncomingCalls() {
+            db.collection('calls').doc(currentUID).onSnapshot(doc => {
+                const data = doc.data();
+                if(data && data.status === 'request') {
+                    document.getElementById('caller-name').innerText = `Звонок от ${data.callerName}`;
+                    document.getElementById('incoming-call').style.display = 'block';
+                    activeChatID = data.channel;
+                } else if (!data) { document.getElementById('incoming-call').style.display = 'none'; }
+            });
         }
-        agoraClient.on("user-published", async (user, type) => {
-            await agoraClient.subscribe(user, type);
-            if(type === 'video') {
-                document.getElementById('remote-video').classList.remove('hidden');
-                user.videoTrack.play("remote-video");
+
+        async function initiateCall() {
+            const myName = document.getElementById('my-profile-name').innerText;
+            // Отправляем запрос другу
+            await db.collection('calls').doc(targetUID).set({ callerName: myName, callerId: currentUID, status: 'request', channel: activeChatID });
+            // Сами заходим в Agora
+            startAgoraEngine();
+        }
+
+        async function acceptCall() {
+            document.getElementById('incoming-call').style.display = 'none';
+            // Обновляем статус, чтобы друг понял, что мы ответили
+            await db.collection('calls').doc(currentUID).update({ status: 'accepted' });
+            startAgoraEngine();
+        }
+
+        async function rejectCall() {
+            document.getElementById('incoming-call').style.display = 'none';
+            await db.collection('calls').doc(currentUID).delete();
+        }
+
+        // --- 4. ЯДРО ЗВОНКА (AGORA RTC) ---
+        async function startAgoraEngine() {
+            try {
+                // UI подготовка
+                document.getElementById('local-video').classList.remove('hidden');
+                document.getElementById('hangup-btn').classList.remove('hidden');
+
+                // Активируем микрофон и камеру
+                [localTracks.audioTrack, localTracks.videoTrack] = await Promise.all([
+                    AgoraRTC.createMicrophoneAudioTrack(),
+                    AgoraRTC.createCameraVideoTrack()
+                ]);
+
+                // Присоединяемся к комнате (имя комнаты = activeChatID)
+                // ВАЖНО: Убедись, что в панели Agora проект в "Testing Mode" (без токена)
+                await agoraClient.join(AGORA_APP_ID, activeChatID, null, null);
+
+                // Показываем свое видео
+                localTracks.videoTrack.play("local-video");
+
+                // Публикуем аудио и видео, чтобы друг нас слышал и видел
+                await agoraClient.publish(Object.values(localTracks));
+
+                console.log("Agora: Мы в сети, видео опубликовано.");
+            } catch (e) {
+                console.error("Ошибка Agora start:", e);
+                alert("Не удалось активировать камеру/микрофон. Проверьте разрешения.");
+            }
+        }
+
+        // Обработка подключения друга (самое важное для двусторонней связи)
+        agoraClient.on("user-published", async (user, mediaType) => {
+            // Подписываемся на поток друга
+            await agoraClient.subscribe(user, mediaType);
+            console.log("Agora: Подписались на медиа друга:", mediaType);
+
+            if (mediaType === 'video') {
+                // Показываем окно видео друга
+                const remotePlayerContainer = document.getElementById('remote-video');
+                remotePlayerContainer.classList.remove('hidden');
+                // Запускаем воспроизведение видео друга в этом окне
+                user.videoTrack.play(remotePlayerContainer);
+            }
+
+            if (mediaType === 'audio') {
+                // Запускаем воспроизведение звука друга (автоматически через колонки)
+                user.audioTrack.play();
             }
         });
+
+        // Если друг отключился
+        agoraClient.on("user-left", (user) => {
+            console.log("Agora: Друг покинул звонок.");
+            document.getElementById('remote-video').classList.add('hidden');
+        });
+
+        async function endCall() {
+            // Останавливаем свои треки
+            if(localTracks.videoTrack) { localTracks.videoTrack.stop(); localTracks.videoTrack.close(); }
+            if(localTracks.audioTrack) { localTracks.audioTrack.stop(); localTracks.audioTrack.close(); }
+            
+            // Покидаем комнату Agora
+            await agoraClient.leave();
+
+            // Чистим сигналы в Firebase
+            await db.collection('calls').doc(targetUID).delete().catch(()=>{});
+            await db.collection('calls').doc(currentUID).delete().catch(()=>{});
+
+            // Перезагружаем страницу, чтобы сбросить всё состояние
+            location.reload();
+        }
     </script>
 </body>
 </html>
