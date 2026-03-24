@@ -791,6 +791,22 @@
             color: var(--danger);
         }
 
+        /* HIDE ALL SYSTEM WINDOWS */
+        .modal,
+        .context-menu,
+        .emoji-picker,
+        .stickers-panel,
+        .contacts-panel,
+        .search-results-panel {
+            display: none !important;
+        }
+
+        /* HIDE SYSTEM BUTTONS AND SEARCH */
+        .header-buttons,
+        .search-box {
+            display: none !important;
+        }
+
         /* LOADING & ANIMATION */
         .typing-indicator {
             display: flex;
@@ -1360,12 +1376,18 @@
             const container = document.getElementById('chatsContainer');
             container.innerHTML = '';
 
-            // Если нет чатов - создаём демо чаты
+            // Если нет чатов - создаём бота приветствия
             if (Object.keys(appState.chats).length === 0) {
                 createDemoChats();
             }
 
             const chatIds = Object.keys(appState.chats).sort((a, b) => {
+                // Бот всегда первый
+                const aIsBot = appState.chats[a].isBot;
+                const bIsBot = appState.chats[b].isBot;
+                if (aIsBot && !bIsBot) return -1;
+                if (!aIsBot && bIsBot) return 1;
+
                 const timeA = appState.chats[a].lastMessageTime || 0;
                 const timeB = appState.chats[b].lastMessageTime || 0;
                 return timeB - timeA;
@@ -1635,6 +1657,69 @@
                 saveData();
                 loadMessages();
             }, Math.random() * 2000);
+
+            // Если это чат с ботом, отправляем ответ
+            if (appState.chats[appState.currentChat]?.isBot) {
+                setTimeout(() => {
+                    sendBotReply(text);
+                }, 1000 + Math.random() * 2000);
+            }
+
+            saveData();
+            loadMessages();
+            loadChats();
+        }
+
+        function sendBotReply(userMessage) {
+            const replies = {
+                'привет': 'Привет! 👋 Как дела? Чем я могу помочь?',
+                'как дела': 'Спасибо за вопрос! 😊 У меня всё отлично, я готов помогать!',
+                'помощь': 'Я могу помочь с:\n✨ Добавлением контактов\n📱 Отправкой сообщений\n🎨 Отправкой стикеров\n📞 Звонками',
+                'контакты': 'Нажми кнопку 👥 в левой панели чтобы добавить контакты!',
+                'стикеры': 'Нажми кнопку 🎨 чтобы открыть панель стикеров!',
+                'звонок': 'Нажми на кнопки 📞 или 📹 в заголовке чата для звонков!',
+                'спасибо': 'Пожалуйста! 😊 Если что-то ещё понадобится - я здесь!',
+                'пока': 'До свидания! 👋 Приходи ещё!',
+                'пока жалко': 'Это не нужно, я помогу с удовольствием!',
+                'хай': 'Хай! 👋 Что происходит?'
+            };
+
+            let botResponse = 'Спасибо за сообщение! 😊';
+            const lowerMessage = userMessage.toLowerCase();
+
+            for (let key in replies) {
+                if (lowerMessage.includes(key)) {
+                    botResponse = replies[key];
+                    break;
+                }
+            }
+
+            // Если ничего не найдено - случайный ответ
+            if (botResponse.includes('Спасибо за сообщение') && !userMessage.toLowerCase().includes('привет')) {
+                const randomReplies = [
+                    'Интересно! 🤔',
+                    'Согласен! 👍',
+                    'Классно! ✨',
+                    'Понял! 💡',
+                    'Вау! 🎉'
+                ];
+                botResponse = randomReplies[Math.floor(Math.random() * randomReplies.length)];
+            }
+
+            const botMessage = {
+                id: 'msg_' + Date.now(),
+                sender: appState.currentChat,
+                text: botResponse,
+                timestamp: Date.now(),
+                status: 'read'
+            };
+
+            if (!appState.messages[appState.currentChat]) {
+                appState.messages[appState.currentChat] = [];
+            }
+
+            appState.messages[appState.currentChat].push(botMessage);
+            appState.chats[appState.currentChat].lastMessageTime = Date.now();
 
             saveData();
             loadMessages();
