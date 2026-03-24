@@ -1768,12 +1768,58 @@
         }
 
         function forwardMessage() {
-            alert('Функция пересылки в разработке');
+            if (!appState.contextMenuMessage || !appState.currentChat) return;
+            
+            // Формируем исходное сообщение
+            const originalMsg = appState.contextMenuMessage.text;
+            const type = appState.contextMenuMessage.isSticker ? '📎 Стикер:' : '💬 Пересланное:';
+            
+            // Просим выбрать чат
+            let targetChatId = null;
+            const chats = Object.keys(appState.chats).filter(id => id !== appState.currentChat);
+            
+            if (chats.length === 0) {
+                alert('Нет других чатов для пересылки');
+                hideContextMenu();
+                return;
+            }
+            
+            // Если есть другие чаты, пересылаем первому
+            targetChatId = chats[0];
+            const forwardText = `${type}\n${escapeHtml(originalMsg)}`;
+            
+            if (!appState.messages[targetChatId]) {
+                appState.messages[targetChatId] = [];
+            }
+            
+            appState.messages[targetChatId].push({
+                id: 'msg_' + Date.now() + Math.random(),
+                text: forwardText,
+                sender: appState.currentUser.id,
+                timestamp: Date.now(),
+                status: 'read',
+                isForwarded: true
+            });
+            
+            appState.chats[targetChatId].lastMessageTime = Date.now();
+            saveData();
+            loadChats();
+            alert(`Сообщение переслано в ${appState.chats[targetChatId].name}`);
             hideContextMenu();
         }
 
         function replyMessage() {
-            alert('Функция ответа в разработке');
+            if (!appState.contextMenuMessage) return;
+            
+            // Сохраняем информацию о сообщении, на которое отвечаем
+            appState.replyingTo = appState.contextMenuMessage;
+            
+            // Показываем цитату в поле ввода
+            const inputEl = document.getElementById('messageInput');
+            inputEl.focus();
+            inputEl.placeholder = `Ответить на: ${appState.contextMenuMessage.text.substring(0, 30)}...`;
+            inputEl.style.borderBottom = '2px solid var(--primary)';
+            
             hideContextMenu();
         }
 
