@@ -842,6 +842,52 @@
             }
         }
 
+        /* USER PROFILE */
+        .user-profile-card {
+            position: fixed;
+            background: var(--card);
+            border: 2px solid var(--primary);
+            border-radius: 16px;
+            padding: 24px;
+            z-index: 3001;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            min-width: 300px;
+            text-align: center;
+            display: none;
+        }
+
+        .user-profile-card.active {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .profile-avatar {
+            width: 96px;
+            height: 96px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), #7c3aed);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            margin-bottom: 16px;
+            color: white;
+            font-weight: bold;
+        }
+
+        .profile-name {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .profile-status {
+            font-size: 14px;
+            color: var(--text-light);
+            margin-bottom: 16px;
+        }
+
         /* SCROLLBAR */
         ::-webkit-scrollbar {
             width: 8px;
@@ -1112,6 +1158,146 @@
             color: var(--text-light);
             margin-top: 4px;
         }
+
+        /* TOAST NOTIFICATIONS */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--card);
+            color: var(--text);
+            padding: 16px 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 4000;
+            animation: slideUp 0.3s ease-out;
+            border-left: 4px solid var(--primary);
+            max-width: 90%;
+        }
+
+        .toast.success {
+            border-left-color: var(--success);
+        }
+
+        .toast.error {
+            border-left-color: var(--danger);
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateX(-50%) translateY(100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(-50%) translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* MOBILE RESPONSIVE */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: auto;
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+                max-height: 60vh;
+                position: fixed;
+                left: 0;
+                top: 0;
+                z-index: 1000;
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .sidebar-toggle {
+                display: flex;
+            }
+
+            .main-chat {
+                width: 100%;
+                height: 100vh;
+            }
+
+            #chatContent {
+                margin-top: 60px !important;
+            }
+
+            #sidebarToggleBtn {
+                display: flex !important;
+            }
+
+            .chat-input-area {
+                padding: 12px 8px;
+            }
+
+            .message {
+                max-width: 85%;
+            }
+
+            .chat-header {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                z-index: 999;
+                background: var(--card);
+                border-bottom: 1px solid var(--border);
+            }
+
+            .icon-btn {
+                width: 32px;
+                height: 32px;
+                font-size: 16px;
+            }
+
+            .sidebar-header h2 {
+                font-size: 24px;
+            }
+
+            .chat-preview {
+                max-width: 120px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .message {
+                max-width: 92%;
+                font-size: 14px;
+            }
+
+            .message-group {
+                margin: 8px 0;
+            }
+
+            .sticker-item {
+                font-size: 32px;
+            }
+
+            .sidebar {
+                max-height: 50vh;
+            }
+
+            .profile-avatar {
+                width: 80px;
+                height: 80px;
+                font-size: 40px;
+            }
+
+            .user-profile-card {
+                min-width: 250px;
+                padding: 16px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1143,6 +1329,8 @@
 
         <!-- MAIN CHAT AREA -->
         <div class="main-chat">
+            <button onclick="toggleSidebar()" style="display: none; position: fixed; top: 12px; left: 12px; z-index: 1001; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; cursor: pointer; color: var(--text); font-size: 18px;" id="sidebarToggleBtn" class="sidebar-toggle">☰</button>
+            
             <div id="emptyState" class="empty-state">
                 <div class="empty-state-icon">💬</div>
                 <div class="empty-state-text">Выберите чат для начала</div>
@@ -1150,9 +1338,9 @@
 
             <div id="chatContent" style="display: none; height: 100%; display: flex; flex-direction: column;">
                 <div class="chat-header">
-                    <div class="chat-header-info">
-                        <div class="chat-avatar online" id="headerAvatar">М</div>
-                        <div class="chat-header-text">
+                    <div class="chat-header-info" style="cursor: pointer;" onclick="showUserProfile(appState.chats[appState.currentChat])">
+                        <div class="chat-avatar online" id="headerAvatar" style="cursor: pointer;">М</div>
+                        <div class="chat-header-text" style="cursor: pointer;">
                             <h3 id="chatName">Чат</h3>
                             <p id="chatStatus">онлайн</p>
                         </div>
@@ -1195,6 +1383,14 @@
             <button class="call-control-btn end" onclick="endCall()">📵</button>
             <button class="call-control-btn mute" id="videoBtn" onclick="toggleVideo()">📹</button>
         </div>
+    </div>
+
+    <!-- USER PROFILE CARD -->
+    <div class="user-profile-card" id="userProfileCard">
+        <button style="position: absolute; top: 8px; right: 8px; background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text);" onclick="closeUserProfile()">✕</button>
+        <div class="profile-avatar" id="profileAvatar">👤</div>
+        <div class="profile-name" id="profileName">Имя пользователя</div>
+        <div class="profile-status" id="profileStatus">Онлайн</div>
     </div>
 
     <!-- INCOMING CALL -->
@@ -1274,7 +1470,62 @@
     <!-- SEARCH RESULTS PANEL -->
     <div class="search-results-panel" id="searchResultsPanel"></div>
 
+    <!-- TOAST CONTAINER -->
+    <div id="toastContainer" style="position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 4000;"></div>
+
     <script>
+        // ============= TOAST NOTIFICATIONS =============
+        function showToast(message, type = 'info', duration = 3000) {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.animation = 'slideUp 0.3s ease-out reverse';
+                setTimeout(() => {
+                    toast.remove();
+                }, 300);
+            }, duration);
+        }
+
+        function showConfirmDialog(message, onConfirm, onCancel) {
+            const container = document.getElementById('toastContainer');
+            const dialog = document.createElement('div');
+            dialog.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: var(--card);
+                padding: 24px;
+                border-radius: 12px;
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+                z-index: 4001;
+                min-width: 300px;
+                text-align: center;
+                color: var(--text);
+            `;
+            
+            dialog.innerHTML = `
+                <div style="margin-bottom: 20px; font-size: 16px;">${message}</div>
+                <div style="display: flex; gap: 12px;">
+                    <button onclick="this.parentElement.parentElement.remove()" style="flex: 1; padding: 10px; border: 1px solid var(--border); background: var(--bg-secondary); border-radius: 8px; cursor: pointer; color: var(--text);">Отмена</button>
+                    <button onclick="this.parentElement.parentElement.remove()" style="flex: 1; padding: 10px; border: none; background: var(--primary); border-radius: 8px; cursor: pointer; color: white; font-weight: 600;">Да</button>
+                </div>
+            `;
+            
+            const confirmBtn = dialog.querySelector('button:last-child');
+            confirmBtn.onclick = () => {
+                onConfirm();
+                dialog.remove();
+            };
+            
+            document.body.appendChild(dialog);
+        }
+
         // ============= СОСТОЯНИЕ ПРИЛОЖЕНИЯ =============
         const appState = {
             currentUser: null,
@@ -1291,7 +1542,8 @@
             selectedMessage: null,
             contextMenuMessage: null,
             searchQuery: '',
-            darkMode: localStorage.getItem('darkMode') === 'true'
+            darkMode: localStorage.getItem('darkMode') === 'true',
+            replyingTo: null
         };
 
         // ============= ИНИЦИАЛИЗАЦИЯ =============
@@ -1339,6 +1591,11 @@
                     hideContextMenu();
                 }
             });
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            sidebar.classList.toggle('active');
         }
 
         function createDefaultUser() {
@@ -1575,7 +1832,20 @@
                             msgEl.style.background = 'none';
                         } else {
                             msgEl.className = 'message' + (isSent ? ' sent' : ' received');
-                            msgEl.textContent = m.text;
+                            
+                            // Если это ответ на сообщение, показываем цитату
+                            if (m.replyTo) {
+                                const quoteEl = document.createElement('div');
+                                quoteEl.style.cssText = 'border-left: 3px solid var(--primary); padding-left: 8px; margin-bottom: 6px; opacity: 0.8; font-size: 12px;';
+                                quoteEl.innerHTML = `<strong>↩️</strong> ${escapeHtml(m.replyTo.text.substring(0, 50))}${m.replyTo.text.length > 50 ? '...' : ''}`;
+                                
+                                const wrapper2 = document.createElement('div');
+                                wrapper2.appendChild(quoteEl);
+                                wrapper2.appendChild(document.createTextNode(m.text));
+                                msgEl.innerHTML = wrapper2.innerHTML;
+                            } else {
+                                msgEl.textContent = m.text;
+                            }
                         }
                         
                         msgEl.style.cursor = 'pointer';
@@ -1590,7 +1860,7 @@
                         }
 
                         if (!m.isSticker) {
-                            msgEl.innerHTML = escapeHtml(m.text) + statusEl.outerHTML;
+                            msgEl.innerHTML = msgEl.innerHTML + statusEl.outerHTML;
                         }
                         
                         wrapper.appendChild(msgEl);
@@ -1641,6 +1911,16 @@
                 status: 'sent'
             };
 
+            // Если отвечаем на сообщение, добавляем информацию о цитате
+            if (appState.replyingTo) {
+                message.replyTo = {
+                    id: appState.replyingTo.id,
+                    text: appState.replyingTo.text,
+                    sender: appState.replyingTo.sender
+                };
+                appState.replyingTo = null;
+            }
+
             if (!appState.messages[appState.currentChat]) {
                 appState.messages[appState.currentChat] = [];
             }
@@ -1650,6 +1930,8 @@
 
             input.value = '';
             input.style.height = 'auto';
+            input.placeholder = 'Введите сообщение';
+            input.style.borderBottom = '';
 
             // Симуляция доставки
             setTimeout(() => {
@@ -1779,7 +2061,7 @@
             const chats = Object.keys(appState.chats).filter(id => id !== appState.currentChat);
             
             if (chats.length === 0) {
-                alert('Нет других чатов для пересылки');
+                showToast('❌ Нет других чатов для пересылки', 'error');
                 hideContextMenu();
                 return;
             }
@@ -1804,7 +2086,7 @@
             appState.chats[targetChatId].lastMessageTime = Date.now();
             saveData();
             loadChats();
-            alert(`Сообщение переслано в ${appState.chats[targetChatId].name}`);
+            showToast(`✅ Сообщение переслано в ${appState.chats[targetChatId].name}`, 'success');
             hideContextMenu();
         }
 
@@ -1937,7 +2219,7 @@
 
         function answerCall() {
             document.getElementById('incomingCall').classList.remove('show');
-            alert('Входящий вызов принят! Продолжайте беседу в окне звонка.');
+            showToast('✅ Вызов принят!', 'success');
         }
 
         function declineCall() {
@@ -1981,11 +2263,11 @@
         }
 
         function attachFile() {
-            alert('Функция загрузки файлов в разработке');
+            showToast('📎 Функция загрузки файлов скоро доступна', 'info');
         }
 
         function toggleChatInfo() {
-            alert('Профиль: ' + appState.chats[appState.currentChat]?.name + '\nСтатус: ' + (appState.chats[appState.currentChat]?.online ? 'онлайн' : 'оффлайн'));
+            showUserProfile(appState.chats[appState.currentChat]);
         }
 
         function closeModal(modalId) {
@@ -1993,10 +2275,10 @@
         }
 
         function clearData() {
-            if (confirm('Это удалит все данные. Вы уверены?')) {
+            showConfirmDialog('Удалить все данные? Это действие нельзя отменить.', () => {
                 localStorage.clear();
                 location.reload();
-            }
+            });
         }
 
         // ============= СТИКЕРЫ И ЭМОДЗИ =============
@@ -2065,7 +2347,7 @@
 
         function sendSticker(sticker) {
             if (!appState.currentChat) {
-                alert('Выберите чат');
+                showToast('❌ Выберите чат', 'error');
                 return;
             }
 
@@ -2245,11 +2527,12 @@
         }
 
         function deleteContact(contactId) {
-            if (!confirm('Удалить контакт?')) return;
-
-            delete appState.contacts[contactId];
-            saveData();
-            loadContactsList();
+            showConfirmDialog('Удалить контакт?', () => {
+                delete appState.contacts[contactId];
+                saveData();
+                loadContactsList();
+                showToast('✅ Контакт удален', 'success');
+            });
         }
 
         // ============= УЛУЧШЕННЫЙ ПОИСК =============
@@ -2332,6 +2615,28 @@
                 hideSearchResults();
                 filterChats();
             }
+        }
+
+        // ============= ПРОФИЛИ ПОЛЬЗОВАТЕЛЕЙ =============
+        function showUserProfile(chat) {
+            const card = document.getElementById('userProfileCard');
+            
+            const initials = chat.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || chat.name[0].toUpperCase();
+            
+            document.getElementById('profileAvatar').textContent = chat.emoji || initials;
+            document.getElementById('profileName').textContent = chat.name;
+            document.getElementById('profileStatus').textContent = chat.online ? '🟢 Онлайн' : '⚫ Последний раз в сети';
+            
+            // Позиционируем в центре экрана
+            card.style.left = 'calc(50% - 150px)';
+            card.style.top = '50%';
+            card.style.transform = 'translateY(-50%)';
+            
+            card.classList.add('active');
+        }
+
+        function closeUserProfile() {
+            document.getElementById('userProfileCard').classList.remove('active');
         }
 
         // ============= ЗАПУСК =============
