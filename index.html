@@ -862,6 +862,240 @@
         .empty-state-text {
             font-size: 14px;
         }
+
+        /* STICKERS & EMOJI PICKER */
+        .emoji-picker {
+            position: fixed;
+            bottom: 60px;
+            left: 20px;
+            background: var(--card);
+            border-radius: 12px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+            z-index: 1500;
+            display: none;
+            width: 300px;
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 12px;
+        }
+
+        .emoji-picker.active {
+            display: grid;
+        }
+
+        .emoji-picker {
+            grid-template-columns: repeat(6, 1fr);
+            gap: 8px;
+        }
+
+        .emoji-item {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 24px;
+            border-radius: 8px;
+            transition: 0.2s;
+            background: var(--bg-secondary);
+        }
+
+        .emoji-item:hover {
+            background: var(--border);
+            transform: scale(1.1);
+        }
+
+        /* STICKERS PANEL */
+        .stickers-panel {
+            position: fixed;
+            left: 360px;
+            top: 0;
+            width: 300px;
+            height: 100vh;
+            background: var(--card);
+            border-right: 1px solid var(--border);
+            display: none;
+            flex-direction: column;
+            z-index: 900;
+            overflow: hidden;
+        }
+
+        .stickers-panel.active {
+            display: flex;
+        }
+
+        .stickers-header {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .stickers-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+        .sticker-item {
+            aspect-ratio: 1;
+            border-radius: 8px;
+            background: var(--bg-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .sticker-item:hover {
+            background: var(--border);
+            transform: scale(1.05);
+        }
+
+        /* CONTACTS PANEL */
+        .contacts-panel {
+            position: fixed;
+            left: 360px;
+            top: 0;
+            width: 300px;
+            height: 100vh;
+            background: var(--card);
+            border-right: 1px solid var(--border);
+            display: none;
+            flex-direction: column;
+            z-index: 900;
+            overflow: hidden;
+        }
+
+        .contacts-panel.active {
+            display: flex;
+        }
+
+        .contacts-header {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .contacts-search {
+            padding: 10px 16px;
+            background: var(--bg-secondary);
+            border: none;
+            color: var(--text);
+            outline: none;
+            margin: 8px;
+            border-radius: 8px;
+        }
+
+        .contacts-content {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .contact-item-full {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .contact-item-full:hover {
+            background: var(--bg-secondary);
+        }
+
+        .contact-avatar-full {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .contact-info-full {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .contact-name-full {
+            font-weight: 500;
+            font-size: 14px;
+            margin-bottom: 2px;
+        }
+
+        .contact-status-full {
+            font-size: 12px;
+            color: var(--text-light);
+        }
+
+        .contact-action {
+            font-size: 18px;
+            cursor: pointer;
+            padding: 4px 8px;
+        }
+
+        /* SEARCH RESULTS */
+        .search-results-panel {
+            position: absolute;
+            top: 50px;
+            left: 0;
+            right: 0;
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
+            max-height: 400px;
+            overflow-y: auto;
+            display: none;
+            z-index: 500;
+        }
+
+        .search-results-panel.active {
+            display: block;
+        }
+
+        .search-result-item {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .search-result-item:hover {
+            background: var(--bg-secondary);
+        }
+
+        .search-result-type {
+            font-size: 11px;
+            color: var(--text-light);
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .search-result-text {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .search-result-preview {
+            font-size: 12px;
+            color: var(--text-light);
+            margin-top: 4px;
+        }
     </style>
 </head>
 <body>
@@ -871,6 +1105,12 @@
             <div class="sidebar-header">
                 <h2>💬</h2>
                 <div class="header-buttons">
+                    <button class="icon-btn" onclick="openContactsPanel()" title="Контакты">
+                        👥
+                    </button>
+                    <button class="icon-btn" onclick="openStickersPanel()" title="Стикеры">
+                        🎨
+                    </button>
                     <button class="icon-btn" onclick="createNewChat()" title="Новый чат">
                         ✏️
                     </button>
@@ -880,7 +1120,7 @@
                 </div>
             </div>
 
-            <input type="text" class="search-box" id="searchInput" placeholder="Поиск чата, сообщения...">
+            <input type="text" class="search-box" id="searchInput" placeholder="Поиск чата, контакта...">
 
             <div class="chats-container" id="chatsContainer"></div>
         </div>
@@ -912,7 +1152,7 @@
 
                 <div class="input-area">
                     <div class="input-wrapper">
-                        <button class="emoji-btn" onclick="toggleEmojiPicker()">😊</button>
+                        <button class="emoji-btn" onclick="toggleEmojiPicker()" title="Стикеры">🎨</button>
                         <textarea class="input-message" id="messageInput" placeholder="Напишите сообщение..." rows="1"></textarea>
                         <button class="attachment-btn" onclick="attachFile()">📎</button>
                     </div>
@@ -993,6 +1233,31 @@
         <div class="context-menu-item danger" onclick="deleteMessage()">🗑️ Удалить</div>
     </div>
 
+    <!-- EMOJI PICKER -->
+    <div class="emoji-picker" id="emojiPicker"></div>
+
+    <!-- STICKERS PANEL -->
+    <div class="stickers-panel" id="stickersPanel">
+        <div class="stickers-header">
+            <h3>Стикеры</h3>
+            <button class="icon-btn" onclick="closeStickersPanel()" style="width: 30px; height: 30px;">✕</button>
+        </div>
+        <div class="stickers-content" id="stickersContent"></div>
+    </div>
+
+    <!-- CONTACTS PANEL -->
+    <div class="contacts-panel" id="contactsPanel">
+        <div class="contacts-header">
+            <h3>Контакты</h3>
+            <button class="icon-btn" onclick="closeContactsPanel()" style="width: 30px; height: 30px;">✕</button>
+        </div>
+        <input type="text" class="contacts-search" id="contactsSearch" placeholder="Поиск контакта...">
+        <div class="contacts-content" id="contactsList"></div>
+    </div>
+
+    <!-- SEARCH RESULTS PANEL -->
+    <div class="search-results-panel" id="searchResultsPanel"></div>
+
     <script>
         // ============= СОСТОЯНИЕ ПРИЛОЖЕНИЯ =============
         const appState = {
@@ -1041,7 +1306,16 @@
 
             document.getElementById('searchInput').addEventListener('input', (e) => {
                 appState.searchQuery = e.target.value;
-                filterChats();
+                if (appState.searchQuery.length > 0) {
+                    showSearchResults();
+                } else {
+                    hideSearchResults();
+                    filterChats();
+                }
+            });
+
+            document.getElementById('contactsSearch').addEventListener('input', (e) => {
+                filterContacts(e.target.value);
             });
 
             document.addEventListener('click', (e) => {
@@ -1258,8 +1532,18 @@
 
                     allGroupMessages.forEach((m, groupIndex) => {
                         const msgEl = document.createElement('div');
-                        msgEl.className = 'message' + (isSent ? ' sent' : ' received');
-                        msgEl.textContent = m.text;
+                        
+                        if (m.isSticker) {
+                            msgEl.className = 'message' + (isSent ? ' sent' : ' received');
+                            msgEl.textContent = m.text;
+                            msgEl.style.fontSize = '48px';
+                            msgEl.style.padding = '4px 8px';
+                            msgEl.style.background = 'none';
+                        } else {
+                            msgEl.className = 'message' + (isSent ? ' sent' : ' received');
+                            msgEl.textContent = m.text;
+                        }
+                        
                         msgEl.style.cursor = 'pointer';
                         msgEl.oncontextmenu = (e) => showContextMenu(e, m);
                         msgEl.onclick = () => msgEl.querySelector('span')?.click?.();
@@ -1271,7 +1555,10 @@
                             statusEl.title = m.status === 'read' ? 'Прочитано' : 'Доставлено';
                         }
 
-                        msgEl.innerHTML = escapeHtml(m.text) + statusEl.outerHTML;
+                        if (!m.isSticker) {
+                            msgEl.innerHTML = escapeHtml(m.text) + statusEl.outerHTML;
+                        }
+                        
                         wrapper.appendChild(msgEl);
 
                         if (m.reactions) {
@@ -1289,10 +1576,12 @@
                             wrapper.appendChild(reactionsEl);
                         }
 
-                        const timeEl = document.createElement('div');
-                        timeEl.className = 'message-time';
-                        timeEl.textContent = formatTime(m.timestamp);
-                        wrapper.appendChild(timeEl);
+                        if (!m.isSticker) {
+                            const timeEl = document.createElement('div');
+                            timeEl.className = 'message-time';
+                            timeEl.textContent = formatTime(m.timestamp);
+                            wrapper.appendChild(timeEl);
+                        }
                     });
 
                     groupEl.appendChild(avatar);
@@ -1564,6 +1853,341 @@
             if (confirm('Это удалит все данные. Вы уверены?')) {
                 localStorage.clear();
                 location.reload();
+            }
+        }
+
+        // ============= СТИКЕРЫ И ЭМОДЗИ =============
+        const STICKERS = [
+            '😀', '😁', '😂', '😃', '😄', '😅', '😆', '😇', '😈', '😉',
+            '😊', '😋', '😌', '😍', '😎', '😏', '😐', '😑', '😒', '😓',
+            '❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍', '🤎', '💔',
+            '🎉', '🎊', '🎈', '🎁', '🎀', '🎗️', '🎭', '🎪', '🎨', '🎬',
+            '👍', '👎', '👏', '🙌', '🤝', '🖐️', '✋', '🤲', '🤞', '🤟',
+            '🚀', '✈️', '🛸', '🚁', '🛩️', '🚂', '🚃', '🚄', '🚅', '🚆',
+            '⭐', '🌟', '✨', '⚡', '🔥', '💥', '💫', '🌈', '☀️', '🌙',
+            '🍕', '🍔', '🍟', '🌭', '🍿', '🍦', '🍰', '🎂', '🍪', '🍩'
+        ];
+
+        function toggleEmojiPicker() {
+            const picker = document.getElementById('emojiPicker');
+            const btnRect = event.target.getBoundingClientRect();
+            
+            if (picker.classList.contains('active')) {
+                picker.classList.remove('active');
+            } else {
+                if (picker.innerHTML === '') {
+                    renderEmojiPicker();
+                }
+                picker.classList.add('active');
+                picker.style.left = (btnRect.left - 30) + 'px';
+            }
+        }
+
+        function renderEmojiPicker() {
+            const picker = document.getElementById('emojiPicker');
+            picker.innerHTML = STICKERS.map(emoji => `
+                <div class="emoji-item" onclick="insertEmoji('${emoji}')" title="${emoji}">
+                    ${emoji}
+                </div>
+            `).join('');
+        }
+
+        function insertEmoji(emoji) {
+            const input = document.getElementById('messageInput');
+            input.value += emoji;
+            input.focus();
+            document.getElementById('emojiPicker').classList.remove('active');
+        }
+
+        // ============= СТИКЕРЫ =============
+        function openStickersPanel() {
+            document.getElementById('stickersPanel').classList.add('active');
+            if (document.getElementById('stickersContent').innerHTML === '') {
+                renderStickers();
+            }
+        }
+
+        function closeStickersPanel() {
+            document.getElementById('stickersPanel').classList.remove('active');
+        }
+
+        function renderStickers() {
+            const content = document.getElementById('stickersContent');
+            content.innerHTML = STICKERS.map(sticker => `
+                <div class="sticker-item" onclick="sendSticker('${sticker}')" title="Отправить">
+                    ${sticker}
+                </div>
+            `).join('');
+        }
+
+        function sendSticker(sticker) {
+            if (!appState.currentChat) {
+                alert('Выберите чат');
+                return;
+            }
+
+            const message = {
+                id: 'msg_' + Date.now(),
+                sender: appState.currentUser.id,
+                text: sticker,
+                timestamp: Date.now(),
+                status: 'sent',
+                isSticker: true
+            };
+
+            if (!appState.messages[appState.currentChat]) {
+                appState.messages[appState.currentChat] = [];
+            }
+
+            appState.messages[appState.currentChat].push(message);
+            appState.chats[appState.currentChat].lastMessageTime = Date.now();
+
+            setTimeout(() => {
+                message.status = 'read';
+                saveData();
+                loadMessages();
+            }, Math.random() * 2000);
+
+            saveData();
+            loadMessages();
+            loadChats();
+            closeStickersPanel();
+        }
+
+        // ============= КОНТАКТЫ =============
+        function openContactsPanel() {
+            document.getElementById('contactsPanel').classList.add('active');
+            loadContactsList();
+        }
+
+        function closeContactsPanel() {
+            document.getElementById('contactsPanel').classList.remove('active');
+        }
+
+        function addContact() {
+            const name = prompt('Введите имя контакта:');
+            if (!name) return;
+
+            const phone = prompt('Введите номер телефона (опционально):');
+            
+            if (!appState.contacts) {
+                appState.contacts = {};
+            }
+
+            const contactId = 'contact_' + Date.now();
+            appState.contacts[contactId] = {
+                id: contactId,
+                name: name,
+                phone: phone || '',
+                addedAt: Date.now()
+            };
+
+            saveData();
+            loadContactsList();
+
+            // Создаём новый чат с этим контактом
+            const chatId = 'chat_' + Date.now();
+            appState.chats[chatId] = {
+                id: chatId,
+                name: name,
+                emoji: name[0].toUpperCase(),
+                online: true,
+                unread: 0,
+                lastMessageTime: Date.now(),
+                contactId: contactId
+            };
+            appState.messages[chatId] = [];
+
+            saveData();
+            loadChats();
+        }
+
+        function loadContactsList() {
+            const container = document.getElementById('contactsList');
+            if (!appState.contacts || Object.keys(appState.contacts).length === 0) {
+                container.innerHTML = `
+                    <div style="padding: 20px; text-align: center; color: var(--text-light);">
+                        <p>Контактов нет</p>
+                        <button class="modal-btn primary" onclick="addContact()" style="margin-top: 10px; width: 80%;">
+                            ➕ Добавить контакт
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            const contactIds = Object.keys(appState.contacts).sort((a, b) => 
+                appState.contacts[a].name.localeCompare(appState.contacts[b].name)
+            );
+
+            container.innerHTML = `
+                <button class="modal-btn primary" onclick="addContact()" style="margin: 8px; width: calc(100% - 16px);">
+                    ➕ Новый контакт
+                </button>
+            ` + contactIds.map(contactId => {
+                const contact = appState.contacts[contactId];
+                const initials = contact.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || contact.name[0].toUpperCase();
+                
+                return `
+                    <div class="contact-item-full" onclick="selectChatWithContact('${contactId}')">
+                        <div class="contact-avatar-full">${initials}</div>
+                        <div class="contact-info-full">
+                            <div class="contact-name-full">${escapeHtml(contact.name)}</div>
+                            <div class="contact-status-full">${contact.phone || 'Нет телефона'}</div>
+                        </div>
+                        <div class="contact-action" onclick="event.stopPropagation(); deleteContact('${contactId}')">🗑️</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function filterContacts(query) {
+            if (!appState.contacts) return;
+
+            const container = document.getElementById('contactsList');
+            const filtered = Object.keys(appState.contacts).filter(id => 
+                appState.contacts[id].name.toLowerCase().includes(query.toLowerCase()) ||
+                appState.contacts[id].phone.toLowerCase().includes(query.toLowerCase())
+            );
+
+            if (filtered.length === 0) {
+                container.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--text-light);">Контакты не найдены</div>';
+                return;
+            }
+
+            container.innerHTML = filtered.map(contactId => {
+                const contact = appState.contacts[contactId];
+                const initials = contact.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || contact.name[0].toUpperCase();
+                
+                return `
+                    <div class="contact-item-full" onclick="selectChatWithContact('${contactId}')">
+                        <div class="contact-avatar-full">${initials}</div>
+                        <div class="contact-info-full">
+                            <div class="contact-name-full">${escapeHtml(contact.name)}</div>
+                            <div class="contact-status-full">${contact.phone || 'Нет телефона'}</div>
+                        </div>
+                        <div class="contact-action" onclick="event.stopPropagation(); deleteContact('${contactId}')">🗑️</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function selectChatWithContact(contactId) {
+            const contact = appState.contacts[contactId];
+            
+            // Ищем чат с этим контактом
+            let chatId = Object.keys(appState.chats).find(id => appState.chats[id].contactId === contactId);
+            
+            if (!chatId) {
+                // Создаём новый чат
+                chatId = 'chat_' + Date.now();
+                const initials = contact.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || contact.name[0].toUpperCase();
+                
+                appState.chats[chatId] = {
+                    id: chatId,
+                    name: contact.name,
+                    emoji: initials,
+                    online: true,
+                    unread: 0,
+                    lastMessageTime: Date.now(),
+                    contactId: contactId
+                };
+                appState.messages[chatId] = [];
+                saveData();
+                loadChats();
+            }
+
+            selectChat(chatId);
+            closeContactsPanel();
+        }
+
+        function deleteContact(contactId) {
+            if (!confirm('Удалить контакт?')) return;
+
+            delete appState.contacts[contactId];
+            saveData();
+            loadContactsList();
+        }
+
+        // ============= УЛУЧШЕННЫЙ ПОИСК =============
+        function showSearchResults() {
+            const query = appState.searchQuery.toLowerCase();
+            const resultsPanel = document.getElementById('searchResultsPanel');
+            const results = [];
+
+            // Поиск в контактах
+            if (appState.contacts) {
+                Object.values(appState.contacts).forEach(contact => {
+                    if (contact.name.toLowerCase().includes(query) || contact.phone.includes(query)) {
+                        results.push({
+                            type: 'contact',
+                            name: contact.name,
+                            id: contact.id,
+                            preview: contact.phone || 'Нет телефона',
+                            data: contact
+                        });
+                    }
+                });
+            }
+
+            // Поиск в чатах
+            Object.entries(appState.chats).forEach(([chatId, chat]) => {
+                if (chat.name.toLowerCase().includes(query)) {
+                    results.push({
+                        type: 'chat',
+                        name: chat.name,
+                        id: chatId,
+                        preview: 'Чат',
+                        data: chat
+                    });
+                }
+            });
+
+            // Поиск в сообщениях
+            Object.entries(appState.messages).forEach(([chatId, messages]) => {
+                const chat = appState.chats[chatId];
+                messages.forEach(msg => {
+                    if (msg.text.toLowerCase().includes(query)) {
+                        results.push({
+                            type: 'message',
+                            name: chat?.name || 'Неизвестный чат',
+                            id: msg.id,
+                            preview: msg.text.substring(0, 50),
+                            chatId: chatId,
+                            data: msg
+                        });
+                    }
+                });
+            });
+
+            if (results.length === 0) {
+                resultsPanel.innerHTML = '<div style="padding: 16px; text-align: center; color: var(--text-light);">Ничего не найдено</div>';
+            } else {
+                resultsPanel.innerHTML = results.slice(0, 10).map((result, index) => `
+                    <div class="search-result-item" onclick="handleSearchResult('${result.type}', '${(result.chatId || result.id).replace(/'/g, "&apos;")}')">
+                        <div class="search-result-type">${result.type === 'contact' ? '👥 Контакт' : result.type === 'message' ? '💬 Сообщение' : '💭 Чат'}</div>
+                        <div class="search-result-text">${escapeHtml(result.name)}</div>
+                        <div class="search-result-preview">${escapeHtml(result.preview)}</div>
+                    </div>
+                `).join('');
+            }
+
+            resultsPanel.classList.add('active');
+        }
+
+        function hideSearchResults() {
+            document.getElementById('searchResultsPanel').classList.remove('active');
+        }
+
+        function handleSearchResult(type, id) {
+            if (type === 'contact') {
+                selectChatWithContact(id);
+            } else if (type === 'chat' || type === 'message') {
+                selectChat(id);
+                document.getElementById('searchInput').value = '';
+                appState.searchQuery = '';
+                hideSearchResults();
+                filterChats();
             }
         }
 
