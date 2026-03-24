@@ -1406,43 +1406,55 @@
         }
 
         function createDemoChats() {
-            const demoChatNames = [
-                { name: 'Сергей', emoji: '👨' },
-                { name: 'Мария', emoji: '👩' },
-                { name: 'Разработчики', emoji: '👨‍💻' },
-                { name: 'Дизайн команда', emoji: '🎨' },
-                { name: 'Семья', emoji: '👨‍👩‍👧‍👦' }
+            // Создаём только бота приветствия
+            const botId = 'chat_bot_welcome';
+            appState.chats[botId] = {
+                id: botId,
+                name: '🤖 Бот Помощник',
+                emoji: '🤖',
+                online: true,
+                unread: 1,
+                lastMessageTime: Date.now(),
+                isBot: true
+            };
+
+            appState.messages[botId] = [
+                {
+                    id: 'msg_1',
+                    sender: botId,
+                    text: 'Привет! 👋 Добро пожаловать в Morozov Messenger!',
+                    timestamp: Date.now() - 3600000,
+                    status: 'read'
+                },
+                {
+                    id: 'msg_2',
+                    sender: botId,
+                    text: 'Это полнофункциональный мессенджер с поддержкой чатов, контактов и звонков.',
+                    timestamp: Date.now() - 3500000,
+                    status: 'read'
+                },
+                {
+                    id: 'msg_3',
+                    sender: botId,
+                    text: '📱 Как начать:\n1. Нажми 👥 чтобы добавить контакты\n2. Отправляй сообщения и стикеры 🎨\n3. Делай звонки 📞',
+                    timestamp: Date.now() - 3400000,
+                    status: 'read'
+                },
+                {
+                    id: 'msg_4',
+                    sender: botId,
+                    text: '✨ Все твои данные сохраняются локально на устройстве',
+                    timestamp: Date.now() - 3300000,
+                    status: 'read'
+                },
+                {
+                    id: 'msg_5',
+                    sender: botId,
+                    text: '💡 Попробуй нажать правой кнопкой на сообщения для дополнительных опций!',
+                    timestamp: Date.now() - 3200000,
+                    status: 'read'
+                }
             ];
-
-            demoChatNames.forEach(({ name, emoji }) => {
-                const chatId = 'chat_' + Date.now() + Math.random();
-                appState.chats[chatId] = {
-                    id: chatId,
-                    name: name,
-                    emoji: emoji,
-                    online: Math.random() > 0.3,
-                    unread: Math.floor(Math.random() * 3),
-                    lastMessageTime: Date.now() - Math.random() * 86400000
-                };
-
-                // Добавляем демо сообщения
-                appState.messages[chatId] = [
-                    {
-                        id: 'msg_1',
-                        sender: 'chat_demo_1',
-                        text: 'Привет! 👋',
-                        timestamp: Date.now() - 3600000,
-                        status: 'read'
-                    },
-                    {
-                        id: 'msg_2',
-                        sender: appState.currentUser.id,
-                        text: 'Привет! Как дела?',
-                        timestamp: Date.now() - 1800000,
-                        status: 'read'
-                    }
-                ];
-            });
 
             saveData();
         }
