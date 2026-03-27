@@ -48,6 +48,107 @@
             background: var(--border);
         }
 
+        .auth-screen {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.65);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 5000;
+        }
+
+        .auth-box {
+            background: var(--card);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+            border-radius: 16px;
+            padding: 28px;
+            width: min(420px, 90vw);
+        }
+
+        .auth-box h2 {
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        .auth-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .auth-tabs button {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid var(--border);
+            background: var(--bg-secondary);
+            color: var(--text);
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .auth-tabs button.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .auth-fields input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 10px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg-secondary);
+            color: var(--text);
+        }
+
+        .auth-btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            background: var(--primary);
+            color: white;
+            font-weight: 700;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .auth-btn:hover {
+            background: var(--primary-dark);
+        }
+
+        .settings-panel {
+            position: fixed;
+            inset: 0;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 4500;
+        }
+
+        .settings-panel.active {
+            display: flex;
+        }
+
+        .settings-content {
+            background: var(--card);
+            border-radius: 16px;
+            padding: 24px;
+            width: min(420px, 90vw);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .settings-content h3 {
+            margin-bottom: 12px;
+            text-align: center;
+        }
+
         /* SIDEBAR */
         .sidebar {
             width: 320px;
@@ -1301,6 +1402,30 @@
     </style>
 </head>
 <body>
+    <!-- AUTH SCREEN -->
+    <div class="auth-screen" id="authScreen">
+        <div class="auth-box">
+            <h2 id="authTitle">Вход</h2>
+            <div class="auth-tabs">
+                <button onclick="switchAuthTab('login')" id="authLoginBtn" class="active">Войти</button>
+                <button onclick="switchAuthTab('register')" id="authRegisterBtn">Регистрация</button>
+            </div>
+            <div class="auth-fields"><!-- login -->
+                <div id="loginFields">
+                    <input type="text" id="loginName" placeholder="Имя пользователя" />
+                    <input type="password" id="loginPassword" placeholder="Пароль" />
+                    <button class="auth-btn" onclick="loginUser()">Войти</button>
+                </div>
+                <div id="registerFields" style="display:none;">
+                    <input type="text" id="registerName" placeholder="Имя пользователя" />
+                    <input type="password" id="registerPassword" placeholder="Пароль" />
+                    <input type="password" id="registerPasswordConfirm" placeholder="Повторите пароль" />
+                    <button class="auth-btn" onclick="registerUser()">Зарегистрироваться</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="container">
         <!-- SIDEBAR -->
         <div class="sidebar">
@@ -1348,7 +1473,7 @@
                     <div class="header-actions">
                         <button class="call-btn" onclick="startCall(false)" title="Голосовой звонок">📞</button>
                         <button class="video-btn" onclick="startCall(true)" title="Видеозвонок">📹</button>
-                        <button class="icon-btn" onclick="toggleChatInfo()" title="Информация">ℹ️</button>
+                        <button class="icon-btn" onclick="openSettings()" title="Настройки">⚙️</button>
                     </div>
                 </div>
 
@@ -1391,6 +1516,19 @@
         <div class="profile-avatar" id="profileAvatar">👤</div>
         <div class="profile-name" id="profileName">Имя пользователя</div>
         <div class="profile-status" id="profileStatus">Онлайн</div>
+    </div>
+
+    <!-- SETTINGS PANEL -->
+    <div class="settings-panel" id="settingsPanel">
+        <div class="settings-content">
+            <h3>Настройки</h3>
+            <input type="text" id="settingsName" placeholder="Имя" />
+            <input type="text" id="settingsAvatar" placeholder="Аватар (эмодзи или инициалы)" />
+            <input type="password" id="settingsPassword" placeholder="Новый пароль" />
+            <button class="auth-btn" onclick="saveSettings()">Сохранить настройки</button>
+            <button class="auth-btn" style="background: #e74c3c;" onclick="logoutUser()">Выйти</button>
+            <button class="auth-btn" style="background: var(--bg-secondary); color: var(--text);" onclick="closeSettings()">Закрыть</button>
+        </div>
     </div>
 
     <!-- INCOMING CALL -->
@@ -1530,6 +1668,7 @@
         const appState = {
             currentUser: null,
             currentChat: null,
+            users: {},
             chats: {},
             messages: {},
             contacts: {},
@@ -1550,13 +1689,11 @@
         function init() {
             loadData();
             if (!appState.currentUser) {
-                createDefaultUser();
+                showAuthScreen();
+                return;
             }
-            loadChats();
-            setupEventListeners();
-            if (appState.darkMode) {
-                document.body.classList.add('dark-mode');
-            }
+            hideAuthScreen();
+            initApp();
         }
 
         function setupEventListeners() {
@@ -1610,25 +1747,139 @@
 
         // ============= РАБОТА С ДАННЫМИ =============
         function saveData() {
-            localStorage.setItem('messenger_user', JSON.stringify(appState.currentUser));
-            localStorage.setItem('messenger_chats', JSON.stringify(appState.chats));
-            localStorage.setItem('messenger_messages', JSON.stringify(appState.messages));
-            localStorage.setItem('messenger_contacts', JSON.stringify(appState.contacts));
+            localStorage.setItem('messenger_users', JSON.stringify(appState.users));
+            if (appState.currentUser) {
+                appState.users[appState.currentUser.id] = appState.currentUser;
+                localStorage.setItem('messenger_current_user', appState.currentUser.id);
+                const data = {
+                    chats: appState.chats,
+                    messages: appState.messages,
+                    contacts: appState.contacts
+                };
+                localStorage.setItem('messenger_data_' + appState.currentUser.id, JSON.stringify(data));
+            }
         }
 
         function loadData() {
-            const user = localStorage.getItem('messenger_user');
-            const chats = localStorage.getItem('messenger_chats');
-            const messages = localStorage.getItem('messenger_messages');
-            const contacts = localStorage.getItem('messenger_contacts');
+            const users = localStorage.getItem('messenger_users');
+            const currentUserId = localStorage.getItem('messenger_current_user');
 
-            if (user) appState.currentUser = JSON.parse(user);
-            if (chats) appState.chats = JSON.parse(chats);
-            if (messages) appState.messages = JSON.parse(messages);
-            if (contacts) appState.contacts = JSON.parse(contacts);
+            appState.users = users ? JSON.parse(users) : {};
+            if (currentUserId && appState.users[currentUserId]) {
+                appState.currentUser = appState.users[currentUserId];
+                loadUserData(currentUserId);
+            } else {
+                appState.currentUser = null;
+                appState.chats = {};
+                appState.messages = {};
+                appState.contacts = {};
+            }
+        }
+
+        function loadUserData(userId) {
+            const data = localStorage.getItem('messenger_data_' + userId);
+            if (data) {
+                const parsed = JSON.parse(data);
+                appState.chats = parsed.chats || {};
+                appState.messages = parsed.messages || {};
+                appState.contacts = parsed.contacts || {};
+            } else {
+                appState.chats = {};
+                appState.messages = {};
+                appState.contacts = {};
+            }
         }
 
         // ============= УПРАВЛЕНИЕ ЧАТАМИ =============
+        function switchAuthTab(tab) {
+            document.getElementById('authLoginBtn').classList.toggle('active', tab === 'login');
+            document.getElementById('authRegisterBtn').classList.toggle('active', tab === 'register');
+            document.getElementById('loginFields').style.display = tab === 'login' ? 'block' : 'none';
+            document.getElementById('registerFields').style.display = tab === 'register' ? 'block' : 'none';
+            document.getElementById('authTitle').textContent = tab === 'login' ? 'Вход' : 'Регистрация';
+        }
+
+        function showAuthScreen() {
+            document.getElementById('authScreen').style.display = 'flex';
+            document.querySelector('.container').style.filter = 'blur(2px)';
+            document.querySelector('.container').style.pointerEvents = 'none';
+        }
+
+        function hideAuthScreen() {
+            document.getElementById('authScreen').style.display = 'none';
+            document.querySelector('.container').style.filter = '';
+            document.querySelector('.container').style.pointerEvents = '';
+        }
+
+        function registerUser() {
+            const name = document.getElementById('registerName').value.trim();
+            const password = document.getElementById('registerPassword').value;
+            const passwordConfirm = document.getElementById('registerPasswordConfirm').value;
+
+            if (!name || !password) {
+                showToast('Введите имя и пароль', 'error');
+                return;
+            }
+            if (password !== passwordConfirm) {
+                showToast('Пароли не совпадают', 'error');
+                return;
+            }
+
+            const existing = Object.values(appState.users).find(u => u.name === name);
+            if (existing) {
+                showToast('Пользователь уже существует', 'error');
+                return;
+            }
+
+            const id = 'user_' + Date.now();
+            const avatar = name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || name[0].toUpperCase();
+            const user = { id, name, avatar, status: 'онлайн', password };
+
+            appState.users[id] = user;
+            appState.currentUser = user;
+            appState.chats = {};
+            appState.messages = {};
+            appState.contacts = {};
+            saveData();
+
+            hideAuthScreen();
+            showToast('Регистрация прошла успешно', 'success');
+            initApp();
+        }
+
+        function loginUser() {
+            const name = document.getElementById('loginName').value.trim();
+            const password = document.getElementById('loginPassword').value;
+
+            if (!name || !password) {
+                showToast('Введите имя и пароль', 'error');
+                return;
+            }
+
+            const user = Object.values(appState.users).find(u => u.name === name);
+            if (!user || user.password !== password) {
+                showToast('Неверное имя или пароль', 'error');
+                return;
+            }
+
+            appState.currentUser = user;
+            loadUserData(user.id);
+            saveData();
+            hideAuthScreen();
+            showToast('Вход выполнен', 'success');
+            initApp();
+        }
+
+        function initApp() {
+            loadChats();
+            setupEventListeners();
+            if (appState.darkMode) {
+                document.body.classList.add('dark-mode');
+            } else {
+                document.body.classList.remove('dark-mode');
+            }
+        }
+
         function loadChats() {
             const container = document.getElementById('chatsContainer');
             container.innerHTML = '';
@@ -2637,6 +2888,52 @@
 
         function closeUserProfile() {
             document.getElementById('userProfileCard').classList.remove('active');
+        }
+
+        function openSettings() {
+            if (!appState.currentUser) return;
+            document.getElementById('settingsPanel').classList.add('active');
+            document.getElementById('settingsName').value = appState.currentUser.name;
+            document.getElementById('settingsAvatar').value = appState.currentUser.avatar;
+            document.getElementById('settingsPassword').value = '';
+        }
+
+        function closeSettings() {
+            document.getElementById('settingsPanel').classList.remove('active');
+        }
+
+        function saveSettings() {
+            if (!appState.currentUser) return;
+            const name = document.getElementById('settingsName').value.trim();
+            const avatar = document.getElementById('settingsAvatar').value.trim();
+            const password = document.getElementById('settingsPassword').value;
+
+            if (!name) {
+                showToast('Имя не может быть пустым', 'error');
+                return;
+            }
+
+            appState.currentUser.name = name;
+            appState.currentUser.avatar = avatar || name.slice(0, 2).toUpperCase();
+            if (password) {
+                appState.currentUser.password = password;
+            }
+            if (appState.chats) {
+                // сохраняем имя в отображении профиля
+                document.getElementById('chatName').textContent = name;
+            }
+            saveData();
+            showToast('Настройки сохранены', 'success');
+            closeSettings();
+        }
+
+        function logoutUser() {
+            appState.currentUser = null;
+            appState.currentChat = null;
+            localStorage.removeItem('messenger_current_user');
+            hideAuthScreen();
+            showAuthScreen();
+            showToast('Вы вышли из аккаунта', 'info');
         }
 
         // ============= ЗАПУСК =============
