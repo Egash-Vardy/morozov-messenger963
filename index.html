@@ -2951,11 +2951,27 @@
                 addedAt: Date.now()
             };
 
+            // Создаем чат с другом сразу
+            const chatId = 'chat_' + Date.now();
+            const initials = name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || name[0].toUpperCase();
+            appState.chats[chatId] = {
+                id: chatId,
+                name: name,
+                emoji: initials,
+                online: true,
+                unread: 0,
+                lastMessageTime: Date.now(),
+                friendId: friendId
+            };
+            appState.messages[chatId] = [];
+
             document.getElementById('friendName').value = '';
             document.getElementById('friendTag').value = '';
             saveData();
             renderFriendsList();
-            showToast(`✅ Друг ${name} добавлен`, 'success');
+            loadChats();
+            selectChat(chatId);
+            showToast(`✅ Друг ${name} добавлен и чат создан`, 'success');
         }
 
         function renderFriendsList() {
