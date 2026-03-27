@@ -1918,6 +1918,7 @@
 
                 const chatEl = document.createElement('div');
                 chatEl.className = 'chat-item' + (appState.currentChat === chatId ? ' active' : '');
+                chatEl.dataset.chatId = chatId;
                 chatEl.onclick = () => selectChat(chatId);
 
                 const initials = chat.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || chat.name[0].toUpperCase();
@@ -2000,18 +2001,27 @@
 
         function selectChat(chatId) {
             appState.currentChat = chatId;
-            appState.chats[chatId].unread = 0;
+            if (appState.chats[chatId]) {
+                appState.chats[chatId].unread = 0;
+            }
 
             document.querySelectorAll('.chat-item').forEach(el => el.classList.remove('active'));
-            event.currentTarget?.classList.add('active');
+            const activeEl = document.querySelector(`.chat-item[data-chat-id="${chatId}"]`);
+            activeEl?.classList.add('active');
 
             document.getElementById('emptyState').style.display = 'none';
             document.getElementById('chatContent').style.display = 'flex';
 
             const chat = appState.chats[chatId];
+            if (!chat) return;
+
             document.getElementById('chatName').textContent = chat.name;
             document.getElementById('chatStatus').textContent = chat.online ? 'онлайн' : 'был в сети';
             document.getElementById('headerAvatar').textContent = chat.emoji || chat.name[0].toUpperCase();
+
+            closeSettings();
+            closeContactsPanel();
+            closeStickersPanel();
 
             loadMessages();
             saveData();
@@ -2213,40 +2223,35 @@
         }
 
         function sendBotReply(userMessage) {
-            const replies = {
-                'привет': 'Привет! 👋 Как дела? Чем я могу помочь?',
-                'как дела': 'Спасибо за вопрос! 😊 У меня всё отлично, я готов помогать!',
-                'помощь': 'Я могу помочь с:\n✨ Добавлением контактов\n📱 Отправкой сообщений\n🎨 Отправкой стикеров\n📞 Звонками',
-                'контакты': 'Нажми кнопку 👥 в левой панели чтобы добавить контакты!',
-                'стикеры': 'Нажми кнопку 🎨 чтобы открыть панель стикеров!',
-                'звонок': 'Нажми на кнопки 📞 или 📹 в заголовке чата для звонков!',
-                'спасибо': 'Пожалуйста! 😊 Если что-то ещё понадобится - я здесь!',
-                'пока': 'До свидания! 👋 Приходи ещё!',
-                'пока жалко': 'Это не нужно, я помогу с удовольствием!',
-                'хай': 'Хай! 👋 Что происходит?'
+            const questionAnswers = {
+                'привет': 'Привет! 👋 Я бот-помощник. Напиши, чем я могу помочь.',
+                'как дела': 'У меня отлично! Готов ответить на вопросы по работе мессенджера.',
+                'что ты умеешь': 'Я умею объяснять функции: чаты, контакты, стикеры, звонки, настройки и друзей.',
+                'как добавить контакт': 'Тапни 👥 и введите имя, чтобы добавить контакт.',
+                'как добавить друга': 'Зайди в ⚙️ Настройки, введи имя + тег и нажми "Добавить друга".',
+                'как позвонить': 'Нажми 📞 или 📹 в шапке чата, чтобы начать звонок.',
+                'что делает кнопка настройки': '⚙️ Открывает настройки, где можно поменять профиль и управлять друзьями.',
+                'какие команды': 'Напиши вопрос прямо, например: "как добавить друга?" или "что ты умеешь?"'
             };
 
-            let botResponse = 'Спасибо за сообщение! 😊';
-            const lowerMessage = userMessage.toLowerCase();
+            const normalized = userMessage.toLowerCase().trim();
+            let botResponse = 'Извини, я пока не понял вопрос. Спроси конкретно: «как добавить другу» или «как звонить».😊';
 
-            for (let key in replies) {
-                if (lowerMessage.includes(key)) {
-                    botResponse = replies[key];
-                    break;
+            if (questionAnswers[normalized]) {
+                botResponse = questionAnswers[normalized];
+            } else {
+                for (const [question, answer] of Object.entries(questionAnswers)) {
+                    if (normalized.includes(question)) {
+                        botResponse = answer;
+                        break;
+                    }
                 }
             }
 
-            // Если ничего не найдено - случайный ответ
-            if (botResponse.includes('Спасибо за сообщение') && !userMessage.toLowerCase().includes('привет')) {
-                const randomReplies = [
-                    'Интересно! 🤔',
-                    'Согласен! 👍',
-                    'Классно! ✨',
-                    'Понял! 💡',
-                    'Вау! 🎉'
-                ];
-                botResponse = randomReplies[Math.floor(Math.random() * randomReplies.length)];
+            if (normalized.endsWith('?') && botResponse.startsWith('Извини')) {
+                botResponse = 'Хороший вопрос! Пожалуйста, сформулируй конкретно: например, "как добавить друга?"';
             }
+
 
             const botMessage = {
                 id: 'msg_' + Date.now(),
