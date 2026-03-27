@@ -1526,6 +1526,11 @@
             <input type="text" id="settingsAvatar" placeholder="Аватар (эмодзи или инициалы)" />
             <input type="password" id="settingsPassword" placeholder="Новый пароль" />
             <button class="auth-btn" onclick="saveSettings()">Сохранить настройки</button>
+            <h4>Друзья</h4>
+            <input type="text" id="friendName" placeholder="Имя друга" />
+            <input type="text" id="friendTag" placeholder="Тег друга (например @friend)" />
+            <button class="auth-btn" onclick="addFriend()">Добавить друга</button>
+            <div id="friendsList" style="max-height: 150px; overflow-y: auto; margin-top: 10px;"></div>
             <button class="auth-btn" style="background: #e74c3c;" onclick="logoutUser()">Выйти</button>
             <button class="auth-btn" style="background: var(--bg-secondary); color: var(--text);" onclick="closeSettings()">Закрыть</button>
         </div>
@@ -1672,6 +1677,7 @@
             chats: {},
             messages: {},
             contacts: {},
+            friends: {},
             callActive: false,
             callStartTime: null,
             callDuration: 0,
@@ -1754,7 +1760,8 @@
                 const data = {
                     chats: appState.chats,
                     messages: appState.messages,
-                    contacts: appState.contacts
+                    contacts: appState.contacts,
+                    friends: appState.friends
                 };
                 localStorage.setItem('messenger_data_' + appState.currentUser.id, JSON.stringify(data));
             }
@@ -1783,10 +1790,12 @@
                 appState.chats = parsed.chats || {};
                 appState.messages = parsed.messages || {};
                 appState.contacts = parsed.contacts || {};
+                appState.friends = parsed.friends || {};
             } else {
                 appState.chats = {};
                 appState.messages = {};
                 appState.contacts = {};
+                appState.friends = {};
             }
         }
 
@@ -2896,6 +2905,7 @@
             document.getElementById('settingsName').value = appState.currentUser.name;
             document.getElementById('settingsAvatar').value = appState.currentUser.avatar;
             document.getElementById('settingsPassword').value = '';
+            renderFriendsList();
         }
 
         function closeSettings() {
@@ -2918,13 +2928,59 @@
             if (password) {
                 appState.currentUser.password = password;
             }
-            if (appState.chats) {
-                // сохраняем имя в отображении профиля
-                document.getElementById('chatName').textContent = name;
-            }
+            document.getElementById('chatName').textContent = name;
             saveData();
             showToast('Настройки сохранены', 'success');
             closeSettings();
+        }
+
+        function addFriend() {
+            const name = document.getElementById('friendName').value.trim();
+            const tag = document.getElementById('friendTag').value.trim();
+
+            if (!name || !tag) {
+                showToast('Введите имя и тег друга', 'error');
+                return;
+            }
+
+            const friendId = 'friend_' + Date.now();
+            appState.friends[friendId] = {
+                id: friendId,
+                name,
+                tag,
+                addedAt: Date.now()
+            };
+
+            document.getElementById('friendName').value = '';
+            document.getElementById('friendTag').value = '';
+            saveData();
+            renderFriendsList();
+            showToast(`✅ Друг ${name} добавлен`, 'success');
+        }
+
+        function renderFriendsList() {
+            const container = document.getElementById('friendsList');
+            const entries = Object.values(appState.friends || {});
+            if (entries.length === 0) {
+                container.innerHTML = '<div style="color: var(--text-light);">Список друзей пуст</div>';
+                return;
+            }
+            container.innerHTML = entries.map(friend => `
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 4px 0; border-bottom: 1px solid var(--border);">
+                    <div>
+                        <div style="font-weight: 600;">${escapeHtml(friend.name)}</div>
+                        <div style="font-size: 12px; color: var(--text-light);">${escapeHtml(friend.tag)}</div>
+                    </div>
+                    <button style="background: #e74c3c; color: white; border: none; border-radius: 6px; padding: 4px 8px; cursor: pointer;" onclick="removeFriend('${friend.id}')">Удалить</button>
+                </div>
+            `).join('');
+        }
+
+        function removeFriend(friendId) {
+            delete appState.friends[friendId];
+            saveData();
+            renderFriendsList();
+            showToast('Друг удалён', 'info');
         }
 
         function logoutUser() {
